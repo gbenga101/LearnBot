@@ -3,150 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnBot - Your AI Educational Assistant</title>
-    <!-- Bootstrap 5 CSS -->
+    <title>LearnBot - AI Educational Assistant</title>    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-robot sidebar-logo"></i>
-                <h5 class="mb-0 ms-2 sidebar-title">LearnBot</h5>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <button class="btn btn-outline-light w-100 new-chat-btn" id="newChatBtn">
+            <i class="bi bi-plus me-2"></i>
+            New chat
+        </button>
+    </div>
+    
+    <div class="sidebar-content">
+        <div class="sidebar-nav">
+            <div class="nav-item">
+                <i class="bi bi-search me-3"></i>
+                <span>Search chats</span>
             </div>
-            <button class="btn btn-link text-light d-lg-none" id="closeSidebar">
-                <i class="bi bi-x-lg"></i>
-            </button>
+            <div class="nav-item">
+                <i class="bi bi-book me-3"></i>
+                <span>Library</span>
+            </div>
+            <div class="nav-item">
+                <i class="bi bi-robot me-3"></i>
+                <span>LearnBot</span>
+            </div>
+            <div class="nav-item">
+                <i class="bi bi-mortarboard me-3"></i>
+                <span>Study Helper</span>
+            </div>
         </div>
         
-        <div class="sidebar-content">
-            <button class="btn btn-primary w-100 mb-3" id="newChatBtn">
-                <i class="bi bi-plus-circle me-2"></i>
-                New Chat
-            </button>
+        <div class="chat-history">
+            <div class="chat-section-title">Today</div>
+            <div class="chat-item active">
+                <span>Physics Concepts Explained</span>
+            </div>
+            <div class="chat-item">
+                <span>Math Problem Solving</span>
+            </div>
+            <div class="chat-item">
+                <span>History Essay Help</span>
+            </div>
             
-            <div class="chat-history">
-                <h6 class="text-muted mb-2">Recent Chats</h6>
-                <div class="chat-item active">
-                    <i class="bi bi-chat-dots me-2"></i>
-                    <span>Compiler Construction</span>
-                </div>
-                <div class="chat-item">
-                    <i class="bi bi-chat-dots me-2"></i>
-                    <span>Python</span>
-                </div>
-                <div class="chat-item">
-                    <i class="bi bi-chat-dots me-2"></i>
-                    <span>C++</span>
+            <div class="chat-section-title">Yesterday</div>
+            <div class="chat-item">
+                <span>Chemistry Reactions</span>
+            </div>
+            <div class="chat-item">
+                <span>Literature Analysis</span>
+            </div>
+            <div class="chat-item">
+                <span>Biology Study Guide</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="upgrade-section">
+            <div class="upgrade-item">
+                <i class="bi bi-arrow-up-circle me-2"></i>
+                <div>
+                    <div class="upgrade-title">Upgrade plan</div>
+                    <div class="upgrade-subtitle">More access to the best models</div>
                 </div>
             </div>
         </div>
-        
-        <div class="sidebar-footer">
-            <div class="user-profile">
-                <div class="d-flex align-items-center">
-                    <div class="avatar">
-                        <i class="bi bi-person-circle"></i>
-                    </div>
-                    <div class="ms-2">
-                        <div class="username">Student</div>
-                        <div class="user-status">Free Plan</div>
-                    </div>
+        <div class="user-profile">
+            <div class="d-flex align-items-center">
+                <div class="avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="ms-2">
+                    <div class="username">uniqueGbengah</div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
         <!-- Header -->
-        <div class="chat-header">
-            <button class="btn btn-link text-light d-lg-none" id="toggleSidebar">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="chat-title">
-                <i class="bi bi-robot me-2"></i>
-                LearnBot - Your Educational Assistant
-            </div>
-            <div class="header-actions">
-                <button class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-three-dots"></i>
-                </button>
-            </div>
+<div class="chat-header">
+    <button class="btn btn-link text-light d-lg-none sidebar-toggle" id="toggleSidebar">
+        <i class="bi bi-list"></i>
+    </button>
+    <div class="header-center">
+        <div class="model-selector">
+            <span class="model-name">LearnBot</span>
+            <i class="bi bi-chevron-down ms-1"></i>
         </div>
+        <button class="btn btn-primary btn-sm get-plus-btn">
+            <i class="bi bi-plus-circle me-1"></i>
+            Get Plus
+        </button>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-share"></i>
+        </button>
+        <button class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-three-dots"></i>
+        </button>
+    </div>
+</div>
 
         <!-- Chat Messages -->
         <div class="chat-messages" id="chatMessages">
             <div class="welcome-message">
-                <div class="welcome-icon">
-                    <i class="bi bi-robot"></i>
-                </div>
-                <h3>Welcome to LearnBot!</h3>
-                <p class="text-muted">I'm here to help you understand complex academic material in simple terms. You can:</p>
-                <ul class="welcome-features">
-                    <li><i class="bi bi-chat-text me-2"></i>Ask questions about any Topic or Course</li>
-                    <li><i class="bi bi-file-earmark-pdf me-2"></i>Upload PDFs or images for explanation</li>
-                    <li><i class="bi bi-gear me-2"></i>Choose your preferred explanation level</li>
-                </ul>
-            </div>
+    <h2 class="welcome-title">How can I help, uniqueGbengah?</h2>
+</div>
         </div>
 
         <!-- Input Area -->
         <div class="input-area">
-            <div class="input-container">
-                <div class="input-row">
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
-                        <button class="btn btn-outline-secondary file-upload-btn" id="fileUploadBtn">
-                            <i class="bi bi-paperclip"></i>
-                        </button>
+    <div class="input-container">
+        <div class="input-row">
+            <div class="file-upload-wrapper">
+                <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                <input type="file" id="imageInput" accept=".jpg,.jpeg,.png" hidden>
+                <button class="btn btn-outline-secondary file-upload-btn" id="fileUploadBtn">
+                    <i class="bi bi-plus"></i>
+                </button>
+                <div class="upload-menu" id="uploadMenu">
+                    <div class="upload-option" id="uploadImage">
+                        <i class="bi bi-image"></i>
+                        <span>Upload Image</span>
                     </div>
-                    
-                    <div class="text-input-wrapper">
-                        <textarea 
-                            class="form-control message-input" 
-                            id="messageInput" 
-                            placeholder="Ask me anything about your studies..."
-                            rows="1"
-                        ></textarea>
-                    </div>
-                    
-                    <div class="explanation-level-wrapper">
-                        <select class="form-select explanation-select" id="explanationLevel">
-                            <option value="layman">Layman's Terms</option>
-                            <option value="child">12-Year-Old Level</option>
-                        </select>
-                    </div>
-                    
-                    <button class="btn btn-primary send-btn" id="sendBtn" disabled>
-                        <i class="bi bi-send"></i>
-                    </button>
-                </div>
-                
-                <div class="file-preview" id="filePreview" style="display: none;">
-                    <div class="file-info">
+                    <div class="upload-option" id="uploadFile">
                         <i class="bi bi-file-earmark"></i>
-                        <span class="file-name"></span>
-                        <button class="btn btn-sm btn-outline-danger remove-file">
-                            <i class="bi bi-x"></i>
-                        </button>
+                        <span>Upload File</span>
                     </div>
                 </div>
             </div>
+            
+            <div class="text-input-wrapper">
+                <textarea 
+                    class="form-control message-input" 
+                    id="messageInput" 
+                    placeholder="Ask me anything about your studies..."
+                    rows="1"
+                ></textarea>
+            </div>
+            
+            <div class="explanation-level-wrapper">
+                <button class="explanation-level-btn" id="explanationLevelBtn">
+                    <i class="bi bi-gear"></i>
+                </button>
+                <div class="explanation-level-menu" id="explanationLevelMenu">
+                    <div class="explanation-option active" data-value="layman">
+                        <i class="bi bi-person"></i>
+                        <span>Layman's Terms</span>
+                    </div>
+                    <div class="explanation-option" data-value="child">
+                        <i class="bi bi-emoji-smile"></i>
+                        <span>12-Year-Old Level</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary send-btn" id="sendBtn" disabled>
+                <i class="bi bi-send"></i>
+            </button>
         </div>
+        
+        <div class="file-preview" id="filePreview" style="display: none;">
+            <div class="file-info">
+                <i class="bi bi-file-earmark"></i>
+                <span class="file-name"></span>
+                <button class="btn btn-sm btn-outline-danger remove-file">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
     </div>
 
     <!-- Overlay for mobile sidebar -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
     <!-- Custom JS -->
     <script src="js/script.js"></script>
 </body>

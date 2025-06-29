@@ -1,4 +1,4 @@
-class LearnBotUI {
+class EduBotUI {
   constructor() {
     this.initializeElements()
     this.bindEvents()
@@ -18,13 +18,17 @@ class LearnBotUI {
     this.messageInput = document.getElementById("messageInput")
     this.sendBtn = document.getElementById("sendBtn")
     this.fileInput = document.getElementById("fileInput")
+    this.imageInput = document.getElementById("imageInput")
     this.fileUploadBtn = document.getElementById("fileUploadBtn")
+    this.uploadMenu = document.getElementById("uploadMenu")
     this.filePreview = document.getElementById("filePreview")
-    this.explanationLevel = document.getElementById("explanationLevel")
+    this.explanationLevelBtn = document.getElementById("explanationLevelBtn")
+    this.explanationLevelMenu = document.getElementById("explanationLevelMenu")
 
     // State
     this.selectedFile = null
     this.isProcessing = false
+    this.currentExplanationLevel = "layman"
   }
 
   bindEvents() {
@@ -38,8 +42,44 @@ class LearnBotUI {
     this.messageInput?.addEventListener("input", () => this.handleInputChange())
     this.messageInput?.addEventListener("keydown", (e) => this.handleKeyDown(e))
     this.sendBtn?.addEventListener("click", () => this.sendMessage())
-    this.fileUploadBtn?.addEventListener("click", () => this.fileInput?.click())
+
+    // Upload menu events
+    this.fileUploadBtn?.addEventListener("click", (e) => {
+      e.stopPropagation()
+      this.toggleUploadMenu()
+    })
+
+    document.getElementById("uploadImage")?.addEventListener("click", () => {
+      this.imageInput?.click()
+      this.hideUploadMenu()
+    })
+
+    document.getElementById("uploadFile")?.addEventListener("click", () => {
+      this.fileInput?.click()
+      this.hideUploadMenu()
+    })
+
     this.fileInput?.addEventListener("change", (e) => this.handleFileSelect(e))
+    this.imageInput?.addEventListener("change", (e) => this.handleFileSelect(e))
+
+    // Explanation level events
+    this.explanationLevelBtn?.addEventListener("click", (e) => {
+      e.stopPropagation()
+      this.toggleExplanationMenu()
+    })
+
+    const explanationOptions = document.querySelectorAll(".explanation-option")
+    explanationOptions.forEach((option) => {
+      option.addEventListener("click", () => {
+        this.selectExplanationLevel(option.dataset.value)
+      })
+    })
+
+    // Close menus when clicking outside
+    document.addEventListener("click", () => {
+      this.hideUploadMenu()
+      this.hideExplanationMenu()
+    })
 
     // File preview events
     const removeFileBtn = this.filePreview?.querySelector(".remove-file")
@@ -81,13 +121,13 @@ class LearnBotUI {
   }
 
   startNewChat() {
-    // Clear chat messages except welcome message
-    const welcomeMessage = this.chatMessages?.querySelector(".welcome-message")
+    // Clear chat messages and show welcome
     if (this.chatMessages) {
-      this.chatMessages.innerHTML = ""
-      if (welcomeMessage) {
-        this.chatMessages.appendChild(welcomeMessage.cloneNode(true))
-      }
+      this.chatMessages.innerHTML = `
+      <div class="welcome-message">
+        <h2 class="welcome-title">How can I help, uniqueGbengah?</h2>
+      </div>
+    `
     }
 
     // Clear input
@@ -180,21 +220,54 @@ class LearnBotUI {
     this.handleInputChange()
   }
 
+  toggleUploadMenu() {
+    this.uploadMenu?.classList.toggle("show")
+    this.hideExplanationMenu()
+  }
+
+  hideUploadMenu() {
+    this.uploadMenu?.classList.remove("show")
+  }
+
+  toggleExplanationMenu() {
+    this.explanationLevelMenu?.classList.toggle("show")
+    this.hideUploadMenu()
+  }
+
+  hideExplanationMenu() {
+    this.explanationLevelMenu?.classList.remove("show")
+  }
+
+  selectExplanationLevel(level) {
+    this.currentExplanationLevel = level
+
+    // Update active state
+    const options = document.querySelectorAll(".explanation-option")
+    options.forEach((option) => {
+      option.classList.remove("active")
+      if (option.dataset.value === level) {
+        option.classList.add("active")
+      }
+    })
+
+    this.hideExplanationMenu()
+  }
+
   async sendMessage() {
     if (this.isProcessing) return
 
     const messageText = this.messageInput?.value.trim()
-    const explanationLevel = this.explanationLevel?.value
+    const explanationLevel = this.currentExplanationLevel
 
     if (!messageText && !this.selectedFile) return
 
     this.isProcessing = true
     this.handleInputChange()
 
-    // Hide welcome message
+    // Hide welcome message and prepare chat area
     const welcomeMessage = this.chatMessages?.querySelector(".welcome-message")
     if (welcomeMessage) {
-      welcomeMessage.style.display = "none"
+      this.chatMessages.innerHTML = ""
     }
 
     // Add user message

@@ -377,7 +377,8 @@ body {
 
 /* Input Area */
 .input-area {
-  padding: 20px 16px 32px;
+  padding: 20px 16px 0;
+  margin-bottom: 22px;
   background-color: var(--bg-primary);
   display: flex;
   justify-content: center;
@@ -644,7 +645,7 @@ body {
 
   .input-area {
     padding: 16px;
-    margin-bottom: 15px;
+    margin-bottom: 24px;
   }
 
   .explanation-level-wrapper {

@@ -1,4 +1,4 @@
-class EduBotUI {
+class LearnBotUI {
   constructor() {
     this.initializeElements()
     this.bindEvents()

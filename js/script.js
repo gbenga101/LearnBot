@@ -99,8 +99,34 @@ class LearnBotUI {
     if (!this.messageInput) return
 
     this.messageInput.addEventListener("input", () => {
+      // Reset height to auto to get the correct scrollHeight
       this.messageInput.style.height = "auto"
-      this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + "px"
+
+      // Calculate new height based on content
+      const newHeight = Math.min(this.messageInput.scrollHeight, 200)
+      this.messageInput.style.height = newHeight + "px"
+
+      // Update input row min-height to accommodate the textarea
+      const inputRow = this.messageInput.closest(".input-row")
+      if (inputRow) {
+        const minHeight = Math.max(48, newHeight + 24) // 24px for padding
+        inputRow.style.minHeight = minHeight + "px"
+      }
+    })
+
+    // Handle paste events that might change height
+    this.messageInput.addEventListener("paste", () => {
+      setTimeout(() => {
+        this.messageInput.style.height = "auto"
+        const newHeight = Math.min(this.messageInput.scrollHeight, 200)
+        this.messageInput.style.height = newHeight + "px"
+
+        const inputRow = this.messageInput.closest(".input-row")
+        if (inputRow) {
+          const minHeight = Math.max(48, newHeight + 24)
+          inputRow.style.minHeight = minHeight + "px"
+        }
+      }, 0)
     })
   }
 
@@ -134,6 +160,12 @@ class LearnBotUI {
     if (this.messageInput) {
       this.messageInput.value = ""
       this.messageInput.style.height = "auto"
+
+      // Reset input row height
+      const inputRow = this.messageInput.closest(".input-row")
+      if (inputRow) {
+        inputRow.style.minHeight = "48px"
+      }
     }
 
     // Remove file
@@ -277,6 +309,12 @@ class LearnBotUI {
     if (this.messageInput) {
       this.messageInput.value = ""
       this.messageInput.style.height = "auto"
+
+      // Reset input row height
+      const inputRow = this.messageInput.closest(".input-row")
+      if (inputRow) {
+        inputRow.style.minHeight = "48px"
+      }
     }
     this.removeFile()
 

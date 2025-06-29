@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnBot - AI Educational Assistant</title>    
+    <title>LearnBot - Your Educational AI Assistant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="shortcut icon" href="./assets/LearnBot.svg" type="image/x-icon">
 </head>
 <body>
     <!-- Sidebar -->
@@ -41,24 +42,24 @@
         <div class="chat-history">
             <div class="chat-section-title">Today</div>
             <div class="chat-item active">
-                <span>Pyhon Programming</span>
+                <span>Pyton Programming Language</span>
             </div>
             <div class="chat-item">
-                <span>STA 311 Solving</span>
+                <span>STA 311 breakdown</span>
             </div>
             <div class="chat-item">
-                <span>Compiler Construction Explanation</span>
+                <span>Understand Compiler Construction</span>
             </div>
             
             <div class="chat-section-title">Yesterday</div>
             <div class="chat-item">
-                <span>Q Basics</span>
+                <span>Learn Java</span>
             </div>
             <div class="chat-item">
-                <span>Structured Query Language</span>
+                <span>What is SQL</span>
             </div>
             <div class="chat-item">
-                <span>Examination Prep</span>
+                <span>Data Science</span>
             </div>
         </div>
     </div>
@@ -69,7 +70,7 @@
                 <i class="bi bi-arrow-up-circle me-2"></i>
                 <div>
                     <div class="upgrade-title">Upgrade plan</div>
-                    <div class="upgrade-subtitle">More access for unlimited help</div>
+                    <div class="upgrade-subtitle">More access to the best models</div>
                 </div>
             </div>
         </div>
@@ -100,7 +101,7 @@
         </div>
         <button class="btn btn-primary btn-sm get-plus-btn">
             <i class="bi bi-plus-circle me-1"></i>
-            Get Unlimited Access
+            Enjoy Premium
         </button>
     </div>
     <div class="header-actions">
@@ -116,62 +117,64 @@
         <!-- Chat Messages -->
         <div class="chat-messages" id="chatMessages">
             <div class="welcome-message">
-    <h2 class="welcome-title">How can I help you today?</h2>
+    <h2 class="welcome-title">Which Course is giving you headache?</h2>
 </div>
         </div>
 
         <!-- Input Area -->
         <div class="input-area">
     <div class="input-container">
-        <div class="input-row">
-            <div class="file-upload-wrapper">
+        <div class="input-row d-flex align-items-end">
+            <div class="file-upload-wrapper position-relative">
                 <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
                 <input type="file" id="imageInput" accept=".jpg,.jpeg,.png" hidden>
-                <button class="btn btn-outline-secondary file-upload-btn" id="fileUploadBtn">
+                <button class="btn file-upload-btn d-flex align-items-center justify-content-center" id="fileUploadBtn">
                     <i class="bi bi-plus"></i>
                 </button>
-                <div class="upload-menu" id="uploadMenu">
-                    <div class="upload-option" id="uploadImage">
+                <div class="upload-menu position-absolute" id="uploadMenu">
+                    <div class="upload-option d-flex align-items-center" id="uploadImage">
                         <i class="bi bi-image"></i>
                         <span>Upload Image</span>
                     </div>
-                    <div class="upload-option" id="uploadFile">
+                    <div class="upload-option d-flex align-items-center" id="uploadFile">
                         <i class="bi bi-file-earmark"></i>
                         <span>Upload File</span>
                     </div>
                 </div>
             </div>
             
-            <div class="text-input-wrapper">
-                <textarea class="form-control message-input" id="messageInput" placeholder="Ask me anything about your studies..." rows="1"></textarea>
+            <div class="text-input-wrapper flex-grow-1">
+                <textarea 
+                    class="form-control message-input w-100" id="messageInput" placeholder="Let's breakdown that Topic/Course giving you headache..." rows="1"
+                    ></textarea>
             </div>
             
-            <div class="explanation-level-wrapper">
-                <button class="explanation-level-btn" id="explanationLevelBtn">
+            <div class="explanation-level-wrapper position-relative">
+                <button class="btn explanation-level-btn d-flex align-items-center justify-content-center" id="explanationLevelBtn">
                     <i class="bi bi-gear"></i>
                 </button>
-                <div class="explanation-level-menu" id="explanationLevelMenu">
-                    <div class="explanation-option active" data-value="layman">
+                <div class="explanation-level-menu position-absolute" id="explanationLevelMenu">
+                    <div class="explanation-option d-flex align-items-center active" data-value="layman">
                         <i class="bi bi-person"></i>
                         <span>Layman's Terms</span>
                     </div>
-                    <div class="explanation-option" data-value="child">
+                    <div class="explanation-option d-flex align-items-center" data-value="child">
                         <i class="bi bi-emoji-smile"></i>
                         <span>12-Year-Old Level</span>
                     </div>
                 </div>
             </div>
             
-            <button class="btn btn-primary send-btn" id="sendBtn" disabled>
+            <button class="btn send-btn d-flex align-items-center justify-content-center" id="sendBtn" disabled>
                 <i class="bi bi-send"></i>
             </button>
         </div>
         
         <div class="file-preview" id="filePreview" style="display: none;">
-            <div class="file-info">
-                <i class="bi bi-file-earmark"></i>
-                <span class="file-name"></span>
-                <button class="btn btn-sm btn-outline-danger remove-file">
+            <div class="file-info d-flex align-items-center">
+                <i class="bi bi-file-earmark me-2"></i>
+                <span class="file-name flex-grow-1"></span>
+                <button class="btn btn-sm remove-file d-flex align-items-center justify-content-center">
                     <i class="bi bi-x"></i>
                 </button>
             </div>
@@ -182,9 +185,8 @@
 
     <!-- Overlay for mobile sidebar -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
+        <!-- Custom JS -->
     <script src="js/script.js"></script>
 </body>
 </html>

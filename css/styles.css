@@ -185,7 +185,7 @@ body {
 /* Main Content */
 .main-content {
   margin-left: 0;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s ease;
@@ -246,7 +246,7 @@ body {
 
 /* Chat Messages */
 .chat-messages {
-  flex: 1 1 auto;
+  flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -379,7 +379,7 @@ body {
 .input-area {
   flex-shrink: 0;
   padding: 20px 16px 0;
-  margin-bottom: 22px;
+  /* margin-bottom: 22px; */
   background-color: var(--bg-primary);
   display: flex;
   justify-content: center;

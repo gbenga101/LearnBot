@@ -185,9 +185,8 @@ body {
 /* Main Content */
 .main-content {
   margin-left: 0;
-  padding-bottom: 5%;
   justify-content: space-around;
-  min-height: 100vh;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s ease;

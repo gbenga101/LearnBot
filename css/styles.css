@@ -383,7 +383,6 @@ body {
   display: flex;
   justify-content: center;
   position: relative;
-  bottom: 10px;
   z-index: 10;
 }
 
@@ -649,7 +648,6 @@ body {
 
   .input-area {
     padding: 16px 12px 24px;
-    /* margin-bottom: 30px; */
   }
 
   .input-row {
@@ -700,7 +698,6 @@ body {
 
   .input-area {
     padding: 12px 8px 20px;
-    /* margin-bottom: 30px; */
   }
 
   .input-row {
@@ -746,12 +743,10 @@ body {
   .main-content {
     width: 100%;
     margin-left: 0;
-    /* padding-bottom: 30px; */
   }
 
   .input-area {
     padding: 18px 16px 28px;
-    /* margin-bottom: 30px; */
   }
 
   .welcome-title {

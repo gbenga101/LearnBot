@@ -608,6 +608,7 @@ body {
   .main-content {
     margin-left: var(--sidebar-width);
     width: calc(100% - var(--sidebar-width));
+    padding-bottom: 30px;
   }
 
   .sidebar-toggle {
@@ -618,6 +619,7 @@ body {
 @media (max-width: 1023px) {
   .main-content {
     margin-left: 0;
+    padding-bottom: 30px;
     width: 100%;
   }
 
@@ -745,6 +747,7 @@ body {
   .main-content {
     width: 100%;
     margin-left: 0;
+    padding-bottom: 30px;
   }
 
   .input-area {

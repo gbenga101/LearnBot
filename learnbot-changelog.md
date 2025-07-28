@@ -106,6 +106,7 @@
 - No chat history is saved at this stage; suggested courses serve as clickable prompts.
 - Await user confirmation or further code to debug desktop layout issue.
 - Always follow mobile-first responsive design principles.
+- Always ensure that UI/UX documentation, code comments, and user-facing instructions are updated to reflect the latest changes with each release.
 
 ---
 

@@ -329,7 +329,7 @@ class LearnBotUI {
 
     try {
       // Use dynamic API URL for deployment
-      const apiUrl = window.API_BASE_URL || "http://127.0.0.1:5000/simplify";
+      const apiUrl = "http://127.0.0.1:5000/simplify";
 
       const response = await fetch(apiUrl, {
         method: "POST",

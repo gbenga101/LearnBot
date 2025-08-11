@@ -95,10 +95,18 @@
         <i class="bi bi-list"></i>
     </button>
     <div class="header-center">
-        <div class="model-selector">
+        <!-- <div class="model-selector">
             <span class="model-name">LearnBot</span>
             <i class="bi bi-chevron-down ms-1"></i>
+        </div> -->
+        <div class="model-selector d-flex align-items-center gap-2">
+        <label for="modelSelect" class="mb-0 small text-muted">Model</label>
+        <select id="modelSelect" class="form-select form-select-sm" style="width: 170px;">
+            <option value="gemini">LearnBot (Gemini)</option>
+            <option value="t5">Local T5 (flan-t5)</option>
+        </select>
         </div>
+
         <button class="btn btn-primary btn-sm get-plus-btn">
             <i class="bi bi-plus-circle me-1"></i>
             Enjoy Premium

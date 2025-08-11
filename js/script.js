@@ -26,15 +26,15 @@ class LearnBotUI {
     this.filePreview = document.getElementById("filePreview")
     this.explanationLevelBtn = document.getElementById("explanationLevelBtn")
     this.explanationLevelMenu = document.getElementById("explanationLevelMenu")
-    this.modelSelector = document.querySelector(".model-selector")
+    this.modelSelector = document.getElementById("modelSelect") // it's a <select>
 
     // State
     this.selectedFile = null
     this.isProcessing = false
     this.currentExplanationLevel = "layman"
 
-    // provider can be 'gemini' or 'openai' (persisted)
-    this.selectedProvider = localStorage.getItem("learnbot_provider") || "gemini"
+    // provider persisted in sessionStorage per your request
+    this.selectedProvider = sessionStorage.getItem("learnbot_provider") || "gemini"
   }
 
   bindEvents() {
@@ -99,28 +99,33 @@ class LearnBotUI {
 
     // Window resize event
     window.addEventListener("resize", () => this.handleResize())
+
+    // Model selector change (sessionStorage)
+    if (this.modelSelector) {
+      // set select initial value from sessionStorage
+      this.modelSelector.value = sessionStorage.getItem("learnbot_provider") || this.selectedProvider
+      this.modelSelector.addEventListener("change", (e) => {
+        const val = e.target.value
+        this.setProvider(val)
+      })
+    }
   }
 
   setupTextareaAutoResize() {
     if (!this.messageInput) return
 
     this.messageInput.addEventListener("input", () => {
-      // Reset height to auto to get the correct scrollHeight
       this.messageInput.style.height = "auto"
-
-      // Calculate new height based on content
       const newHeight = Math.min(this.messageInput.scrollHeight, 200)
       this.messageInput.style.height = newHeight + "px"
 
-      // Update input row min-height to accommodate the textarea
       const inputRow = this.messageInput.closest(".input-row")
       if (inputRow) {
-        const minHeight = Math.max(48, newHeight + 24) // 24px for padding
+        const minHeight = Math.max(48, newHeight + 24)
         inputRow.style.minHeight = minHeight + "px"
       }
     })
 
-    // Handle paste events that might change height
     this.messageInput.addEventListener("paste", () => {
       setTimeout(() => {
         this.messageInput.style.height = "auto"
@@ -136,68 +141,15 @@ class LearnBotUI {
     })
   }
 
-  // ---------------- Model selector + welcome modal ----------------
-  setupModelSelector() {
-    if (!this.modelSelector) return
-
-    // Add label area if missing
-    let nameSpan = this.modelSelector.querySelector(".model-name")
-    if (!nameSpan) {
-      nameSpan = document.createElement("span")
-      nameSpan.className = "model-name"
-      this.modelSelector.prepend(nameSpan)
-    }
-
-    // create dropdown menu (simple)
-    const menu = document.createElement("div")
-    menu.className = "model-menu dropdown-menu"
-    menu.style.position = "absolute"
-    menu.style.zIndex = 1100
-    menu.style.display = "none"
-    menu.innerHTML = `
-      <a class="dropdown-item provider-option" data-provider="gemini" href="#">Gemini (Google)</a>
-      <a class="dropdown-item provider-option" data-provider="openai" href="#">OpenAI ChatGPT</a>
-    `
-
-    this.modelSelector.style.position = "relative"
-    this.modelSelector.appendChild(menu)
-    this.updateModelLabel()
-
-    // toggle
-    this.modelSelector.addEventListener("click", (e) => {
-      e.stopPropagation()
-      menu.style.display = menu.style.display === "block" ? "none" : "block"
-    })
-    document.addEventListener("click", () => (menu.style.display = "none"))
-
-    // clicks
-    menu.querySelectorAll(".provider-option").forEach((opt) => {
-      opt.addEventListener("click", (ev) => {
-        ev.preventDefault()
-        const provider = opt.dataset.provider
-        this.setProvider(provider)
-        menu.style.display = "none"
-      })
-    })
-  }
-
-  updateModelLabel() {
-    if (!this.modelSelector) return
-    const nameSpan = this.modelSelector.querySelector(".model-name")
-    if (!nameSpan) return
-    nameSpan.textContent = this.selectedProvider === "openai" ? "ChatGPT" : "LearnBot (Gemini)"
-  }
-
+  // model provider helpers
   setProvider(provider) {
     this.selectedProvider = provider
-    localStorage.setItem("learnbot_provider", provider)
-    this.updateModelLabel()
+    sessionStorage.setItem("learnbot_provider", provider)
     // small UX note
-    this.addBotMessage(`Switched to ${provider === "openai" ? "OpenAI ChatGPT" : "Gemini"}.`)
+    this.addBotMessage(`Switched to ${provider === "t5" ? "Local T5" : "LearnBot (Gemini)"} — provider will persist this session.`)
   }
 
   showWelcomeModal() {
-    // show only once per session
     if (sessionStorage.getItem("learnbot_welcomed")) return
 
     const modalHtml = `
@@ -207,7 +159,7 @@ class LearnBotUI {
             <div class="modal-body">
               <h5>Hello — I'm <strong>LearnBot</strong> 👋</h5>
               <p class="small">Your AI study buddy that breaks complex course material into simple, easy-to-understand explanations.</p>
-              <p class="small mb-1"><strong>Tip:</strong> Choose a model from the header (LearnBot / ChatGPT) and pick an explanation level using the gear icon.</p>
+              <p class="small mb-1"><strong>Tip:</strong> Choose a model from the header (LearnBot / Local T5) and pick an explanation level using the gear icon.</p>
               <div class="d-flex justify-content-end">
                 <button class="btn btn-sm btn-outline-light" id="learnbotWelcomeClose">Got it</button>
               </div>
@@ -227,11 +179,9 @@ class LearnBotUI {
 
     modalEl.addEventListener("hidden.bs.modal", () => {
       sessionStorage.setItem("learnbot_welcomed", "1")
-      modalEl.remove() // clean up
+      modalEl.remove()
     })
   }
-
-  // ---------------- end modal + model selector ----------------
 
   toggleSidebar() {
     this.sidebar?.classList.toggle("show")
@@ -250,7 +200,6 @@ class LearnBotUI {
   }
 
   startNewChat() {
-    // Clear chat messages and show welcome
     if (this.chatMessages) {
       this.chatMessages.innerHTML = `
       <div class="welcome-message">
@@ -258,26 +207,15 @@ class LearnBotUI {
       </div>
     `
     }
-
-    // Clear input
     if (this.messageInput) {
       this.messageInput.value = ""
       this.messageInput.style.height = "auto"
-
-      // Reset input row height
       const inputRow = this.messageInput.closest(".input-row")
-      if (inputRow) {
-        inputRow.style.minHeight = "48px"
-      }
+      if (inputRow) inputRow.style.minHeight = "48px"
     }
-
-    // Remove file
     this.removeFile()
-
-    // Update chat history
     const chatItems = document.querySelectorAll(".chat-item")
     chatItems.forEach((item) => item.classList.remove("active"))
-
     this.handleInputChange()
   }
 
@@ -285,17 +223,12 @@ class LearnBotUI {
     const chatItems = document.querySelectorAll(".chat-item")
     chatItems.forEach((item) => item.classList.remove("active"))
     chatItem.classList.add("active")
-
-    // Close sidebar on mobile after selection
-    if (window.innerWidth < 992) {
-      this.closeSidebar()
-    }
+    if (window.innerWidth < 992) this.closeSidebar()
   }
 
   handleInputChange() {
     const hasText = this.messageInput?.value.trim().length > 0
     const hasFile = this.selectedFile !== null
-
     if (this.sendBtn) {
       this.sendBtn.disabled = (!hasText && !hasFile) || this.isProcessing
     }
@@ -304,30 +237,23 @@ class LearnBotUI {
   handleKeyDown(e) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      if (!this.sendBtn?.disabled) {
-        this.sendMessage()
-      }
+      if (!this.sendBtn?.disabled) this.sendMessage()
     }
   }
 
   handleFileSelect(e) {
     const file = e.target.files[0]
     if (!file) return
-
-    // Validate file type
     const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png"]
     if (!allowedTypes.includes(file.type)) {
       alert("Please select a PDF or image file (JPG, PNG).")
       return
     }
-
-    // Validate file size (10MB limit)
     const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
       alert("File size must be less than 10MB.")
       return
     }
-
     this.selectedFile = file
     this.showFilePreview(file)
     this.handleInputChange()
@@ -335,23 +261,15 @@ class LearnBotUI {
 
   showFilePreview(file) {
     if (!this.filePreview) return
-
     const fileName = this.filePreview.querySelector(".file-name")
-    if (fileName) {
-      fileName.textContent = file.name
-    }
-
+    if (fileName) fileName.textContent = file.name
     this.filePreview.style.display = "block"
   }
 
   removeFile() {
     this.selectedFile = null
-    if (this.fileInput) {
-      this.fileInput.value = ""
-    }
-    if (this.filePreview) {
-      this.filePreview.style.display = "none"
-    }
+    if (this.fileInput) this.fileInput.value = ""
+    if (this.filePreview) this.filePreview.style.display = "none"
     this.handleInputChange()
   }
 
@@ -375,27 +293,19 @@ class LearnBotUI {
 
   selectExplanationLevel(level) {
     this.currentExplanationLevel = level
-
-    // Update active state
     const options = document.querySelectorAll(".explanation-option")
     options.forEach((option) => {
       option.classList.remove("active")
-      if (option.dataset.value === level) {
-        option.classList.add("active")
-      }
+      if (option.dataset.value === level) option.classList.add("active")
     })
-
     this.hideExplanationMenu()
   }
 
   async sendMessage() {
     if (this.isProcessing) return
-
     const messageText = this.messageInput?.value.trim()
     const explanationLevel = this.currentExplanationLevel
-
     if (!messageText && !this.selectedFile) return
-
     if (!explanationLevel) {
       this.addBotMessage("Please select an explanation level before sending your message.")
       return
@@ -405,34 +315,23 @@ class LearnBotUI {
     this.sendBtn && (this.sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...')
     this.handleInputChange()
 
-    // Hide welcome message and prepare chat area
     const welcomeMessage = this.chatMessages?.querySelector(".welcome-message")
-    if (welcomeMessage) {
-      this.chatMessages.innerHTML = ""
-    }
+    if (welcomeMessage) this.chatMessages.innerHTML = ""
 
-    // Add user message
     this.addUserMessage(messageText, this.selectedFile)
-
-    // Clear input
     if (this.messageInput) {
       this.messageInput.value = ""
       this.messageInput.style.height = "auto"
-
-      // Reset input row height
       const inputRow = this.messageInput.closest(".input-row")
-      if (inputRow) {
-        inputRow.style.minHeight = "48px"
-      }
+      if (inputRow) inputRow.style.minHeight = "48px"
     }
     this.removeFile()
 
-    // Show typing indicator
     const typingId = this.addTypingIndicator()
 
     try {
-      // Use dynamic API URL for deployment
-      const apiUrl = window.API_BASE_URL || "http://127.0.0.1:5000/simplify"
+      const apiUrl = window.API_BASE_URL || "http://127.0.0.1:5000/simplify";
+      const provider = sessionStorage.getItem("learnbot_provider") || this.selectedProvider || "gemini"
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -442,7 +341,7 @@ class LearnBotUI {
         body: JSON.stringify({
           text: messageText,
           level: explanationLevel,
-          provider: this.selectedProvider // <-- provider added
+          provider: provider
         })
       });
 
@@ -459,7 +358,6 @@ class LearnBotUI {
       if (response.ok && data && typeof data.simplified_text === "string") {
         this.addBotMessage(data.simplified_text || "No response received.")
       } else if (data && data.error) {
-        // server-sent friendly error
         this.addBotMessage(data.error)
       } else {
         this.addBotMessage("Oops! Something went wrong. Please try again.")
@@ -502,7 +400,6 @@ class LearnBotUI {
                 <i class="bi bi-person"></i>
             </div>
         `
-
     this.chatMessages.appendChild(messageDiv)
     this.scrollToBottom()
   }
@@ -521,7 +418,6 @@ class LearnBotUI {
                 ${this.escapeHtml(text)}
             </div>
         `
-
     this.chatMessages.appendChild(messageDiv)
     this.scrollToBottom()
   }

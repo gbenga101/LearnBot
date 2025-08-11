@@ -4,9 +4,6 @@ class LearnBotUI {
     this.bindEvents()
     this.setupTextareaAutoResize()
     this.setupModelSelector()
-    this.loadChatHistory() // restore previous messages (sessionStorage)
-    // expose instance for external controls (Info button)
-    window.learnbotUI = this
     this.showWelcomeModal()
   }
 
@@ -38,16 +35,6 @@ class LearnBotUI {
 
     // provider persisted in sessionStorage per your request
     this.selectedProvider = sessionStorage.getItem("learnbot_provider") || "gemini"
-
-    // Chat history key (sessionStorage)
-    this.CHAT_KEY = "learnbot_chat_history"
-
-    // welcome modal behavior key: 'always' or 'session' (dev toggle)
-    // default: 'always' (show on every page load) per your request
-    this.WELCOME_BEHAVIOR_KEY = "learnbot_welcome_behavior"
-    if (!sessionStorage.getItem(this.WELCOME_BEHAVIOR_KEY)) {
-      sessionStorage.setItem(this.WELCOME_BEHAVIOR_KEY, 'always')
-    }
   }
 
   bindEvents() {
@@ -122,46 +109,23 @@ class LearnBotUI {
         this.setProvider(val)
       })
     }
-
-    // Info button (re-open welcome modal on demand)
-    const infoBtn = document.getElementById('infoBtn')
-    infoBtn?.addEventListener('click', () => {
-      // force show modal regardless of prior session flag
-      sessionStorage.removeItem('learnbot_welcomed')
-      this.showWelcomeModal(true)
-    })
-
-    // Helpful: keyboard shortcut to toggle welcome behavior during dev: Shift+W
-    document.addEventListener('keydown', (e) => {
-      if (e.shiftKey && e.key.toLowerCase() === 'w') {
-        const current = sessionStorage.getItem(this.WELCOME_BEHAVIOR_KEY) || 'always'
-        const next = current === 'always' ? 'session' : 'always'
-        sessionStorage.setItem(this.WELCOME_BEHAVIOR_KEY, next)
-        this.addBotMessage(`Welcome modal behavior set to: ${next} (dev toggle)`) 
-      }
-    })
   }
 
   setupTextareaAutoResize() {
     if (!this.messageInput) return
 
     this.messageInput.addEventListener("input", () => {
-      // Reset height to auto to get the correct scrollHeight
       this.messageInput.style.height = "auto"
-
-      // Calculate new height based on content
       const newHeight = Math.min(this.messageInput.scrollHeight, 200)
       this.messageInput.style.height = newHeight + "px"
 
-      // Update input row min-height to accommodate the textarea
       const inputRow = this.messageInput.closest(".input-row")
       if (inputRow) {
-        const minHeight = Math.max(48, newHeight + 24) // 24px for padding
+        const minHeight = Math.max(48, newHeight + 24)
         inputRow.style.minHeight = minHeight + "px"
       }
     })
 
-    // Handle paste events that might change height
     this.messageInput.addEventListener("paste", () => {
       setTimeout(() => {
         this.messageInput.style.height = "auto"
@@ -185,15 +149,8 @@ class LearnBotUI {
     this.addBotMessage(`Switched to ${provider === "t5" ? "Local T5" : "LearnBot (Gemini)"} — provider will persist this session.`)
   }
 
-  // ---------------- Welcome modal (dev-toggle aware) ----------------
-  showWelcomeModal(force = false) {
-    // behavior can be 'always' or 'session'
-    const behavior = sessionStorage.getItem(this.WELCOME_BEHAVIOR_KEY) || 'always'
-
-    // if session-only behavior and already shown this tab, skip unless forced
-    if (!force && behavior === 'session' && sessionStorage.getItem('learnbot_welcomed')) {
-      return
-    }
+  showWelcomeModal() {
+    if (sessionStorage.getItem("learnbot_welcomed")) return
 
     const modalHtml = `
       <div class="modal fade" id="learnbotWelcomeModal" tabindex="-1" aria-hidden="true">
@@ -203,53 +160,28 @@ class LearnBotUI {
               <h5>Hello — I'm <strong>LearnBot</strong> 👋</h5>
               <p class="small">Your AI study buddy that breaks complex course material into simple, easy-to-understand explanations.</p>
               <p class="small mb-1"><strong>Tip:</strong> Choose a model from the header (LearnBot / Local T5) and pick an explanation level using the gear icon.</p>
-              <div class="d-flex justify-content-between mt-2">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="welcomeSessionOnly">
-                  <label class="form-check-label small" for="welcomeSessionOnly">Show once per tab</label>
-                </div>
-                <div>
-                  <button class="btn btn-sm btn-outline-light" id="learnbotWelcomeClose">Got it</button>
-                </div>
+              <div class="d-flex justify-content-end">
+                <button class="btn btn-sm btn-outline-light" id="learnbotWelcomeClose">Got it</button>
               </div>
             </div>
           </div>
         </div>
       </div>
     `
-
     document.body.insertAdjacentHTML("beforeend", modalHtml)
     const modalEl = document.getElementById("learnbotWelcomeModal")
     const bsModal = new bootstrap.Modal(modalEl)
     bsModal.show()
-
-    // set checkbox according to current behavior
-    const chk = document.getElementById('welcomeSessionOnly')
-    if (chk) {
-      chk.checked = (behavior === 'session')
-      chk.addEventListener('change', (e) => {
-        const val = e.target.checked ? 'session' : 'always'
-        sessionStorage.setItem(this.WELCOME_BEHAVIOR_KEY, val)
-        // show a small note in chat
-        this.addBotMessage(`Welcome modal behavior set to: ${val}`)
-      })
-    }
 
     document.getElementById("learnbotWelcomeClose").addEventListener("click", () => {
       bsModal.hide()
     })
 
     modalEl.addEventListener("hidden.bs.modal", () => {
-      // if user selected session-only, record that the modal was shown this tab
-      const behaviorNow = sessionStorage.getItem(this.WELCOME_BEHAVIOR_KEY) || 'always'
-      if (behaviorNow === 'session') {
-        sessionStorage.setItem('learnbot_welcomed', '1')
-      }
+      sessionStorage.setItem("learnbot_welcomed", "1")
       modalEl.remove()
     })
   }
-
-  // ---------------- end modal ----------------
 
   toggleSidebar() {
     this.sidebar?.classList.toggle("show")
@@ -271,7 +203,7 @@ class LearnBotUI {
     if (this.chatMessages) {
       this.chatMessages.innerHTML = `
       <div class="welcome-message">
-        <h2 class="welcome-title">How can I help, uniqueGbengah?</h2>
+        <h2 class="welcome-title">How can I be of help to you Today?</h2>
       </div>
     `
     }
@@ -284,10 +216,6 @@ class LearnBotUI {
     this.removeFile()
     const chatItems = document.querySelectorAll(".chat-item")
     chatItems.forEach((item) => item.classList.remove("active"))
-
-    // clear session chat history
-    sessionStorage.removeItem(this.CHAT_KEY)
-
     this.handleInputChange()
   }
 
@@ -472,12 +400,8 @@ class LearnBotUI {
                 <i class="bi bi-person"></i>
             </div>
         `
-
     this.chatMessages.appendChild(messageDiv)
     this.scrollToBottom()
-
-    // persist to session history
-    this.pushChatHistory({ role: 'user', text: text, ts: Date.now() })
   }
 
   addBotMessage(text) {
@@ -494,12 +418,8 @@ class LearnBotUI {
                 ${this.escapeHtml(text)}
             </div>
         `
-
     this.chatMessages.appendChild(messageDiv)
     this.scrollToBottom()
-
-    // persist to session history
-    this.pushChatHistory({ role: 'bot', text: text, ts: Date.now() })
   }
 
   addTypingIndicator() {
@@ -535,39 +455,6 @@ class LearnBotUI {
       typingElement.remove()
     }
   }
-
-  // ---------------- session chat history helpers ----------------
-  pushChatHistory(entry) {
-    try {
-      const raw = sessionStorage.getItem(this.CHAT_KEY)
-      const arr = raw ? JSON.parse(raw) : []
-      arr.push(entry)
-      // keep last 40 messages to avoid storage bloat
-      const trimmed = arr.slice(-40)
-      sessionStorage.setItem(this.CHAT_KEY, JSON.stringify(trimmed))
-    } catch (e) {
-      console.warn('Failed to persist chat history', e)
-    }
-  }
-
-  loadChatHistory() {
-    try {
-      const raw = sessionStorage.getItem(this.CHAT_KEY)
-      if (!raw) return
-      const arr = JSON.parse(raw)
-      arr.forEach(item => {
-        if (item.role === 'user') {
-          this.addUserMessage(item.text, null)
-        } else {
-          this.addBotMessage(item.text)
-        }
-      })
-    } catch (e) {
-      console.warn('Failed to load chat history', e)
-    }
-  }
-
-  // ---------------- end history helpers ----------------
 
   async fileToBase64(file) {
     return new Promise((resolve, reject) => {

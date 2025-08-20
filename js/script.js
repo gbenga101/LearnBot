@@ -141,11 +141,30 @@ class LearnBotUI {
     }
   }
 
-  setProvider(provider) {
+  /* setProvider(provider) {
     this.selectedProvider = provider
     sessionStorage.setItem('learnbot_provider', provider)
     this.addBotMessage(`Switched to ${provider === 't5' ? 'Local T5' : 'LearnBot (Gemini)'} — provider saved for this session.`)
+  } */
+  
+  setProvider(provider) {
+    this.selectedProvider = provider
+    sessionStorage.setItem("learnbot_provider", provider)
+
+    let label = ""
+    if (provider === "t5") {
+      label = "Local T5"
+    } else if (provider === "gemini") {
+      label = "LearnBot (Gemini)"
+    } else if (provider === "openai") {
+      label = "OpenAI"
+    } else {
+      label = provider
+    }
+
+    this.addBotMessage(`Switched to ${label} — provider saved for this session.`)
   }
+
 
   showWelcomeModal(force = false) {
     const behavior = sessionStorage.getItem(this.WELCOME_BEHAVIOR_KEY) || 'always'

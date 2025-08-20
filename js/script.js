@@ -74,8 +74,26 @@ class LearnBotUI {
     const explanationOptions = document.querySelectorAll(".explanation-option")
     explanationOptions.forEach((option) => option.addEventListener('click', () => this.selectExplanationLevel(option.dataset.value)))
 
-    // Close menus when clicking outside
-    document.addEventListener('click', () => { this.hideUploadMenu(); this.hideExplanationMenu() })
+    // Close menus when clicking outside & close sidebar on outside click (mobile)
+    document.addEventListener('click', (e) => {
+      // always hide floating menus
+      this.hideUploadMenu()
+      this.hideExplanationMenu()
+
+      // If sidebar is open on small screens, and the click is outside the sidebar and toggle button, close it
+      try {
+        if (this.sidebar && this.sidebar.classList.contains('show') && window.innerWidth < 992) {
+          const clickedInsideSidebar = this.sidebar.contains(e.target)
+          const clickedToggle = this.toggleSidebarBtn && this.toggleSidebarBtn.contains(e.target)
+          if (!clickedInsideSidebar && !clickedToggle) {
+            this.closeSidebar()
+          }
+        }
+      } catch (err) {
+        // defensive: don't let this stop other handlers
+        console.warn('Error in outside-click handler', err)
+      }
+    })
 
     // File preview remove
     this.filePreview?.querySelector('.remove-file')?.addEventListener('click', () => this.removeFile())
@@ -483,6 +501,8 @@ class LearnBotUI {
           this.handleInputChange()
           this.messageInput.focus()
         }
+        // close sidebar on mobile/tablet
+        if (window.innerWidth < 992) this.closeSidebar()
       })
 
       // double click: populate and send immediately
@@ -490,6 +510,8 @@ class LearnBotUI {
         if (this.messageInput) {
           this.messageInput.value = entry.text
           this.handleInputChange()
+          // close sidebar on mobile/tablet so the UI focuses on chat
+          if (window.innerWidth < 992) this.closeSidebar()
           await this.sendMessage()
         }
       })

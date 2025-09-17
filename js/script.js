@@ -74,7 +74,7 @@ class LearnBotUI {
         animation: spin 1s linear infinite;
       }
       @keyframes spin { 100% { transform: rotate(360deg); } }
-      .message { max-height: 300px; overflow-y: auto; }
+      /* .message { max-height: 300px; overflow-y: auto; } */
     `;
     document.head.appendChild(style);
   }

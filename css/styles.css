@@ -246,7 +246,8 @@ body {
 }
 
 /* Chat Messages */
-.chat-messages {
+/* .chat-messages {
+  padding: 1rem;
   flex: 1;
   overflow-y: auto;
   display: flex;
@@ -254,9 +255,20 @@ body {
   max-width: 768px;
   margin: 0 auto;
   width: 100%;
-  padding: 0 16px;
   max-height: calc(100vh - 180px);
+  min-height: 0;
+} */
+.chat-messages {
+  max-height: calc(100vh - 180px); /* Keep this for upper limit */
+  min-height: 200px; /* Minimum height to avoid collapse */
+  overflow-y: auto; /* Ensure container scrolls */
+  flex: 1 1 auto; /* Allow growth but control shrinkage */
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
 }
 
 .welcome-message {
@@ -281,9 +293,10 @@ body {
   display: flex;
   margin-bottom: 1rem;
   animation: fadeIn 0.3s ease;
-  max-height: 420px;
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: none;
   word-wrap: break-word;
+  padding: 0.5rem;
 }
 
 .message.user {
@@ -295,13 +308,11 @@ body {
 }
 
 .message-content {
-  max-width: 70%;
   padding: 1rem;
   border-radius: 1rem;
   position: relative;
-  max-width: 100%;
   overflow-x: auto;
-  white-space: pre-wrap;
+  /* white-space: pre-wrap; */
   word-break: break-word;
 }
 
@@ -364,16 +375,12 @@ body {
 
 /* OCR text appearance - more compact and readable */
 .message .message-content pre.ocr-text {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-  font-size: 0.90rem;
-  line-height: 1.3;
+  /* Consistent spacing */
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
   max-height: 340px;
-  overflow-y: auto;
-  margin: 0;
-  padding: 10px;
-  background: rgba(0,0,0,0.06);
-  border-radius: 8px;
-  white-space: pre-wrap;
 }
 
 /* small meta text next to copy */
@@ -385,7 +392,7 @@ body {
 /* overall bubble max height adjustment */
 .chat-messages .message { 
   max-height: 420px; 
-  overflow-y: auto; 
+  overflow-y: none; 
 }
 
 /* reduce spacing so blocks don't look jammed */
@@ -442,7 +449,8 @@ body {
 
 /* Input Area */
 .input-area {
-  padding: 20px 16px 32px;
+  /* Consistent padding */
+  padding: 1.25rem 1rem 2rem;
   background-color: var(--bg-primary);
   display: flex;
   justify-content: center;
@@ -457,15 +465,14 @@ body {
 }
 
 .input-row {
+  /* More consistent spacing */
+  padding: 0.75rem 1rem;
+  min-height: 48px;
+  gap: 0.5rem;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 24px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
   transition: all 0.2s ease;
-  min-height: 48px;
 }
 
 .input-row:focus-within {
@@ -695,59 +702,20 @@ body {
 }
 
 @media (max-width: 768px) {
-  .welcome-title {
-    font-size: 24px;
-    padding: 0 16px;
-  }
-
-  .header-center {
-    justify-content: flex-start;
-    margin-left: 8px;
-  }
-
-  .get-plus-btn {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-
-  .input-area {
-    padding: 16px 12px 24px;
-  }
-
-  .input-row {
-    padding: 10px 12px;
-    border-radius: 20px;
-  }
-
-  .message-input {
-    font-size: 16px;
-  }
-
-  .explanation-level-menu,
-  .upload-menu {
-    bottom: 45px;
-    left: 50%;
-    transform: translateX(-50%);
-    right: auto;
-  }
-
-  .upload-menu {
-    left: 20%;
-    transform: translateX(-20%);
-  }
-
-  .explanation-level-menu {
-    right: 20%;
-    left: auto;
-    transform: translateX(20%);
+  .chat-messages {
+    /* Consistent padding on mobile */
+    padding: 0.75rem;
   }
 
   .message-content {
+    /* Better spacing on mobile */
+    padding: 0.75rem;
     max-width: 85%;
   }
 
-  .welcome-message {
-    padding: 20px 16px;
+  .input-area {
+    /* Consistent mobile padding */
+    padding: 1rem 0.75rem 1.5rem;
   }
 }
 

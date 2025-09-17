@@ -295,14 +295,35 @@ class LearnBotUI {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await fetch("/upload", { method: "POST", body: formData });
-      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
-      const data = await response.json();
+      
+      // First upload the file
+      const uploadResponse = await fetch("/upload", { 
+        method: "POST", 
+        body: formData 
+      });
+      
+      if (!uploadResponse.ok) throw new Error(`Upload failed: ${uploadResponse.status}`);
+      const data = await uploadResponse.json();
+      
+      // Then send the extracted text for simplification
       if (data.extracted_text) {
-        this.createMessageBubble(`📄 Extracted:\n\n${data.extracted_text}`, 'bot');
+        const simplifyResponse = await fetch('/simplify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            text: data.extracted_text, 
+            level: this.currentExplanationLevel, 
+            provider: this.selectedProvider 
+          })
+        });
+        
+        const simplifiedData = await simplifyResponse.json();
+        if (simplifiedData.simplified_text) {
+          this.createMessageBubble(simplifiedData.simplified_text, 'bot');
+        }
       }
     } catch (err) {
-      this.createMessageBubble(`Error uploading file: ${err.message}`, 'bot');
+      this.createMessageBubble(`Error processing file: ${err.message}`, 'bot');
     } finally {
       this.isProcessing = false;
       this.hideSpinner();

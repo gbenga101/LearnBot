@@ -7,7 +7,7 @@
 // ==============================
 
 const API_BASE = "http://127.0.0.1:5000";
-window.API_BASE_URL = "http://127.0.0.1:5000";
+/* window.API_BASE_URL = "http://127.0.0.1:5000"; */
 
 class LearnBotUI {
   constructor() {
@@ -492,22 +492,45 @@ class LearnBotUI {
       this.messageInput.style.height = 'auto';
     }
 
-    const apiUrl = window.API_BASE_URL || 'http://127.0.0.1:5000/simplify';
+    // Fix API endpoint construction
+    const apiUrl = 'http://127.0.0.1:5000/simplify';  // Use direct URL instead of complex construction
+    console.debug('[LearnBotUI] sending to:', apiUrl);
+
+    // Add endpoint validation
+    if (!apiUrl.endsWith('/simplify')) {
+        console.error('[LearnBotUI] Fatal: apiUrl does not target /simplify', apiUrl);
+        this.createMessageBubble('Internal error: incorrect API endpoint configured. See console.', 'bot');
+        this.isProcessing = false;
+        this.hideSpinner();
+        return;
+    }
+
     const payload = { text: messageText, level: explanationLevel, provider };
+    
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(payload),
       });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({error: `Server returned ${response.status}`}));
+        throw new Error(error.error || 'Unexpected response from server');
+      }
+
       const data = await response.json();
-      if (response.ok && data?.simplified_text) {
+      if (data?.simplified_text) {
         this.createMessageBubble(data.simplified_text, 'bot');
       } else {
-        this.createMessageBubble(data?.error || 'Oops — unexpected response from server.', 'bot');
+        throw new Error('No simplified text returned');
       }
     } catch (err) {
-      this.createMessageBubble('Sorry, I encountered an error. Please try again.', 'bot');
+      console.error('[LearnBotUI] sendMessage failed:', err);
+      this.createMessageBubble(`Error: ${err.message}`, 'bot');
     } finally {
       this.isProcessing = false;
       this.hideSpinner();
@@ -517,43 +540,111 @@ class LearnBotUI {
   }
 
   createMessageBubble(text, sender = 'bot') {
-    if (!this.chatMessages) return;
+    if (!this.chatMessages) {
+        console.warn('[LearnBotUI] chatMessages container missing — creating fallback container at body end.');
+        this.chatMessages = document.createElement('div');
+        this.chatMessages.id = 'chatMessages';
+        this.chatMessages.style.padding = '12px';
+        this.chatMessages.style.maxHeight = '60vh';
+        this.chatMessages.style.overflowY = 'auto';
+        document.body.appendChild(this.chatMessages);
+    }
+
+    console.debug('[LearnBotUI] createMessageBubble called', { sender, len: (text || '').length });
+
     const bubble = document.createElement('div');
     bubble.className = `message ${sender}`;
     bubble.setAttribute('aria-live', 'polite');
-    
-    let contentHtml = sender === 'user' && this.selectedFile
-      ? `<div class="file-attachment mb-2"><i class="bi ${this.selectedFile.type.includes('pdf') ? 'bi-file-earmark-pdf' : 'bi-image'} me-2"></i><span>${this.escapeHtml(this.selectedFile.name)}</span></div>`
-      : '';
 
-    // Replace the existing content += line with this new block
+    let contentHtml = '';
+    if (sender === 'user' && this.selectedFile) {
+        const icon = (this.selectedFile.type || '').includes('pdf') ? 'bi-file-earmark-pdf' : 'bi-image';
+        contentHtml += `<div class="file-attachment mb-2"><i class="bi ${icon} me-2"></i><span>${this.escapeHtml(this.selectedFile.name)}</span></div>`;
+    }
+
     const rawText = String(text || '');
     const isLikelyOCR = (rawText.match(/\n/g) || []).length >= 2 && rawText.length > 200;
 
     try {
-      if (isLikelyOCR) {
-        contentHtml += `<div class="message-content"><pre class="ocr-text" style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
-      } else if (typeof marked === 'function' && typeof DOMPurify === 'object') {
-        contentHtml += `<div class="message-content">${DOMPurify.sanitize(marked.parse(text))}</div>`;
-      } else {
-        contentHtml += `<div class="message-content"><pre style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
-      }
+        if (isLikelyOCR) {
+            contentHtml += `
+                <div class="message-content">
+                    <div class="ocr-toolbar">
+                        <button class="copy-ocr-btn" type="button" aria-label="Copy OCR text">Copy</button>
+                        <span class="ocr-meta">OCR · ${Math.min(rawText.length, 9999)} chars</span>
+                    </div>
+                    <pre class="ocr-text" style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre>
+                </div>
+            `;
+        } else if (typeof marked === 'function' && typeof DOMPurify === 'object') {
+            contentHtml += `<div class="message-content">${DOMPurify.sanitize(marked.parse(rawText))}</div>`;
+        } else {
+            contentHtml += `<div class="message-content"><pre style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
+        }
     } catch (err) {
-      console.error('[LearnBotUI] Markdown/DOMPurify render failed, falling back to plain text', err);
-      contentHtml += `<div class="message-content"><pre style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
+        console.error('[LearnBotUI] Markdown/DOMPurify render failed, falling back to plain text', err);
+        contentHtml += `<div class="message-content"><pre style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
     }
 
     bubble.innerHTML = `
-      <div class="message-avatar"><i class="bi ${sender === 'user' ? 'bi-person' : 'bi-robot'}"></i></div>
-      ${contentHtml}
+        <div class="message-avatar"><i class="bi ${sender === 'user' ? 'bi-person' : 'bi-robot'}"></i></div>
+        ${contentHtml}
     `;
+
     this.chatMessages.appendChild(bubble);
     this.scrollToBottom();
-    if (typeof renderMathInElement === 'function') {
-      renderMathInElement(bubble.querySelector('.message-content'));
+
+    try {
+        if (!isLikelyOCR && typeof renderMathInElement === 'function') {
+            const el = bubble.querySelector('.message-content');
+            if (el) renderMathInElement(el);
+        }
+    } catch (err) {
+        console.warn('[LearnBotUI] KaTeX render failed (non-blocking):', err);
     }
-    this.pushChatHistory({ role: sender, text: text, ts: Date.now() });
-  }
+
+    if (isLikelyOCR) {
+        try {
+            const btn = bubble.querySelector('.copy-ocr-btn');
+            const pre = bubble.querySelector('pre.ocr-text');
+            if (btn && pre) {
+                btn.addEventListener('click', async () => {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(pre.textContent);
+                        } else {
+                            const ta = document.createElement('textarea');
+                            ta.value = pre.textContent;
+                            document.body.appendChild(ta);
+                            ta.select();
+                            document.execCommand('copy');
+                            ta.remove();
+                        }
+                        const original = btn.textContent;
+                        btn.textContent = 'Copied';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.textContent = original || 'Copy';
+                            btn.classList.remove('copied');
+                        }, 1500);
+                    } catch (err) {
+                        console.error('[LearnBotUI] copy failed', err);
+                        btn.textContent = 'Copy failed';
+                        setTimeout(() => btn.textContent = 'Copy', 1500);
+                    }
+                });
+            }
+        } catch (err) {
+            console.warn('[LearnBotUI] failed to attach OCR copy handler', err);
+        }
+    }
+
+    try {
+        this.pushChatHistory({ role: sender, text: text, ts: Date.now() });
+    } catch (err) {
+        console.warn('[LearnBotUI] pushChatHistory failed', err);
+    }
+}
 
   pushChatHistory(entry) {
     try {

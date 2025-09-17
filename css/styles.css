@@ -186,7 +186,7 @@ body {
 .main-content {
   margin-left: 0;
   justify-content: space-around;
-  height: 90vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s ease;
@@ -255,6 +255,8 @@ body {
   margin: 0 auto;
   width: 100%;
   padding: 0 16px;
+  max-height: calc(100vh - 180px);
+  padding: 1rem;
 }
 
 .welcome-message {
@@ -279,6 +281,9 @@ body {
   display: flex;
   margin-bottom: 1rem;
   animation: fadeIn 0.3s ease;
+  max-height: 420px;
+  overflow-y: auto;
+  word-wrap: break-word;
 }
 
 .message.user {
@@ -294,6 +299,10 @@ body {
   padding: 1rem;
   border-radius: 1rem;
   position: relative;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .message.user .message-content {
@@ -329,23 +338,60 @@ body {
   color: var(--accent-color);
 }
 
-/* keep OCR blocks compact but scrollable */
-.message .message-content pre.ocr-text {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-  font-size: 0.95rem;
-  max-height: 320px;       /* don't let it take whole screen */
-  overflow-y: auto;
-  margin: 0;
-  padding: 8px;
-  background: rgba(0,0,0,0.04);
-  border-radius: 6px;
+/* OCR pre block styling & copy button */
+.message .message-content .ocr-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
-/* slightly larger message bubble max-height for readability */
-.chat-messages .message { max-height: 420px; overflow-y: auto; }
+.copy-ocr-btn {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
 
-/* make sure Markdown lists render well on dark theme (optional) */
-.message .message-content ul { padding-left: 1.2rem; }
+.copy-ocr-btn.copied {
+  background: #2b2b2b;
+  color: #fff;
+  border-color: transparent;
+}
+
+/* OCR text appearance - more compact and readable */
+.message .message-content pre.ocr-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  font-size: 0.90rem;
+  line-height: 1.3;
+  max-height: 340px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 10px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
+
+/* small meta text next to copy */
+.ocr-meta {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+}
+
+/* overall bubble max height adjustment */
+.chat-messages .message { 
+  max-height: 420px; 
+  overflow-y: auto; 
+}
+
+/* reduce spacing so blocks don't look jammed */
+.message .message-content { 
+  padding: 6px; 
+}
 
 /* Loading Animation */
 .typing-indicator {
@@ -753,6 +799,13 @@ body {
   .explanation-option,
   .upload-option {
     padding: 6px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .message .message-content pre.ocr-text { 
+    font-size: 0.82rem; 
+    max-height: 220px; 
   }
 }
 

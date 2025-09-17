@@ -108,13 +108,20 @@
     </button>
     <div class="header-center">
         <div class="model-selector d-flex align-items-center gap-2">
-        <label for="modelSelect" class="mb-0 small text-muted">Model</label>
-        <select id="modelSelect" class="form-select form-select-sm" style="width: 170px;">
-            <option value="t5">Local T5 (flan-t5)</option>
-            <option value="gemini">LearnBot (Fallback)</option>
-            <option value="openai">LearnBot (Robust Fallback)</option>
-        </select>
-        </div>
+    <label for="modelSelect" class="mb-0 small text-muted">Model</label>
+    <select id="modelSelect" class="form-select form-select-sm" style="width: 170px;">
+        <option value="t5">Local T5 (flan-t5)</option>
+        <option value="gemini">LearnBot (Fallback)</option>
+        <option value="openai">LearnBot (Robust Fallback)</option>
+    </select>
+    <!-- Replace the existing checkbox with this -->
+    <div class="form-check form-check-inline mb-0">
+        <input class="form-check-input" type="checkbox" id="directUploadToggle">
+        <label class="form-check-label small text-muted ms-3" for="directUploadToggle" style="color:var(--muted)">
+            Direct Upload+Simplify
+        </label>
+    </div>
+</div>
 
         <button class="btn btn-primary btn-sm get-plus-btn">
             <i class="bi bi-plus-circle me-1"></i>

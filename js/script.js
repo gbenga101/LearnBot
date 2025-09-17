@@ -6,15 +6,24 @@
 // - Bootstrap (old)
 // ==============================
 
+const API_BASE = "http://127.0.0.1:5000";
+window.API_BASE_URL = "http://127.0.0.1:5000";
+
 class LearnBotUI {
   constructor() {
     this.initializeElements();
     this.bindEvents();
     this.setupTextareaAutoResize();
     this.setupModelSelector();
-    this.loadChatHistory(); // Restore previous messages (sessionStorage)
-    window.learnbotUI = this; // Expose instance for external controls
-    this.showWelcomeModal(false); // Show welcome modal on load
+    this.loadChatHistory();
+    window.learnbotUI = this;
+    
+    // Add debug logs here
+    console.log('learnbotUI', window.learnbotUI);
+    console.log('chatMessages el:', document.getElementById('chatMessages'));
+    console.log('alt container:', document.getElementById('chat-container'));
+    
+    this.showWelcomeModal(false);
   }
 
   initializeElements() {
@@ -233,6 +242,11 @@ class LearnBotUI {
   }
 
   startNewChat() {
+    // Add message count debug
+    const messageCount = document.getElementById('chatMessages')?.children.length || 
+                        document.getElementById('chat-container')?.children.length;
+    console.log('Current message count:', messageCount);
+
     if (this.chatMessages) {
       this.chatMessages.innerHTML = `
         <div class="welcome-message">
@@ -265,69 +279,143 @@ class LearnBotUI {
     if (this.sendBtn) this.sendBtn.disabled = (!hasText && !hasFile) || this.isProcessing;
   }
 
+  useDirectUploadSimplify() {
+    const el = document.getElementById('directUploadToggle');
+    if (!el) return false;
+    return el.checked;
+  }
+
   async handleFileSelect(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const allowedTypes = [
-      'application/pdf',
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'text/plain',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    if (!allowedTypes.includes(file.type)) {
-      this.createMessageBubble('Please select a PDF, image (JPG/PNG), text, or Word file.', 'bot');
-      return;
+    console.debug('[LearnBotUI] handleFileSelect', file.name, file.type);
+    if (this.isProcessing) {
+        this.createMessageBubble('Please wait until the current process is finished.', 'bot');
+        return;
     }
+
+    // File validation
+    const allowedMIMEs = new Set([
+        'application/pdf','image/jpeg','image/jpg','image/png','text/plain'
+    ]);
+    const allowedExts = new Set(['pdf','png','jpg','jpeg','txt','docx']);
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+    if (!allowedMIMEs.has(file.type) && !allowedExts.has(ext)) {
+        this.createMessageBubble('Please select a PDF, image (JPG/PNG), text, or Word file.', 'bot');
+        return;
+    }
+
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      this.createMessageBubble('File size must be less than 10MB.', 'bot');
-      return;
+        this.createMessageBubble('File size must be less than 10MB.', 'bot');
+        return;
     }
+
     this.selectedFile = file;
     this.showFilePreview(file);
     this.handleInputChange();
 
-    // Upload to server (new)
+    // Upload logic
     this.isProcessing = true;
     this.showSpinner();
+    
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      
-      // First upload the file
-      const uploadResponse = await fetch("/upload", { 
-        method: "POST", 
-        body: formData 
-      });
-      
-      if (!uploadResponse.ok) throw new Error(`Upload failed: ${uploadResponse.status}`);
-      const data = await uploadResponse.json();
-      
-      // Then send the extracted text for simplification
-      if (data.extracted_text) {
-        const simplifyResponse = await fetch('/simplify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            text: data.extracted_text, 
-            level: this.currentExplanationLevel, 
-            provider: this.selectedProvider 
-          })
-        });
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('provider', this.selectedProvider);
+        formData.append('level', this.currentExplanationLevel);
         
-        const simplifiedData = await simplifyResponse.json();
-        if (simplifiedData.simplified_text) {
-          this.createMessageBubble(simplifiedData.simplified_text, 'bot');
+        const endpoint = this.useDirectUploadSimplify() 
+            ? `${API_BASE}/upload-and-simplify` 
+            : `${API_BASE}/upload`;
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData
+        });
+
+        // REPLACE EVERYTHING BELOW THIS LINE until the catch block
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => null);
+            const errMsg = (errorBody && errorBody.error) ? errorBody.error : `${endpoint} returned ${response.status}`;
+            throw new Error(errMsg);
         }
-      }
+
+        const data = await response.json().catch(() => null);
+        console.debug('[LearnBotUI] upload response (raw):', data, 'endpoint:', endpoint);
+
+        const extracted = (data && (data.extracted_text || data.text)) || null;
+
+        if (!extracted) {
+            console.warn('[LearnBotUI] No extracted_text found in upload response. Full response:', data);
+            try {
+                this.createMessageBubble('⚠️ Debug upload response (no extracted_text):\n\n' + JSON.stringify(data, null, 2), 'bot');
+            } catch (ex) {
+                console.error('[LearnBotUI] createMessageBubble failed while showing debug response', ex);
+                const container = document.getElementById('chatMessages') || document.getElementById('chat-container') || document.body;
+                const el = document.createElement('pre');
+                el.textContent = JSON.stringify(data, null, 2);
+                container.appendChild(el);
+            }
+        } else {
+            console.info('[LearnBotUI] extracted_text length=', extracted.length);
+            try {
+                this.createMessageBubble(`Extracted text:\n\n${extracted}`, 'bot');
+            } catch (ex) {
+                console.error('[LearnBotUI] createMessageBubble threw while showing extracted text', ex);
+                const container = document.getElementById('chatMessages') || document.getElementById('chat-container') || document.body;
+                const el = document.createElement('div');
+                el.className = 'message bot';
+                const pre = document.createElement('pre');
+                pre.style.whiteSpace = 'pre-wrap';
+                pre.textContent = extracted;
+                el.appendChild(pre);
+                container.appendChild(el);
+            }
+
+            if (!this.useDirectUploadSimplify()) {
+                try {
+                    const simplifyResponse = await fetch(`${API_BASE}/simplify`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: extracted,
+                            level: this.currentExplanationLevel,
+                            provider: this.selectedProvider
+                        })
+                    });
+
+                    console.debug('[LearnBotUI] simplify response status', simplifyResponse.status);
+
+                    if (!simplifyResponse.ok) {
+                        const err = await simplifyResponse.json().catch(()=>null);
+                        const msg = (err && err.error) ? err.error : `Simplify returned ${simplifyResponse.status}`;
+                        throw new Error(msg);
+                    }
+
+                    const simpJson = await simplifyResponse.json().catch(()=>null);
+                    console.debug('[LearnBotUI] simplify body', simpJson);
+
+                    if (simpJson && simpJson.simplified_text) {
+                        this.createMessageBubble(simpJson.simplified_text, 'bot');
+                    } else {
+                        this.createMessageBubble('⚠️ Simplify returned no simplified_text. See console for body.', 'bot');
+                        console.warn('[LearnBotUI] simplify returned no simplified_text', simpJson);
+                    }
+                } catch (err) {
+                    console.error('[LearnBotUI] simplify step failed', err);
+                    this.createMessageBubble(`Error during simplification step: ${err.message}`, 'bot');
+                }
+            }
+        }
+        // END OF REPLACEMENT
+
     } catch (err) {
-      this.createMessageBubble(`Error processing file: ${err.message}`, 'bot');
+        this.createMessageBubble(`Error processing file: ${err.message}`, 'bot');
     } finally {
-      this.isProcessing = false;
-      this.hideSpinner();
-      this.removeFile();
+        this.isProcessing = false;
+        this.hideSpinner();
+        this.removeFile();
     }
   }
 
@@ -376,6 +464,7 @@ class LearnBotUI {
     if (this.isProcessing) return;
     const messageText = this.messageInput?.value.trim() || '';
     const explanationLevel = this.currentExplanationLevel || (document.getElementById("level-select")?.value || "layman");
+    console.debug('[LearnBotUI] sendMessage', { provider: this.selectedProvider, level: explanationLevel });
     if (!messageText && !this.selectedFile) return;
     if (!explanationLevel) {
       this.createMessageBubble('Please select an explanation level before sending your message.', 'bot');
@@ -432,13 +521,31 @@ class LearnBotUI {
     const bubble = document.createElement('div');
     bubble.className = `message ${sender}`;
     bubble.setAttribute('aria-live', 'polite');
-    let content = sender === 'user' && this.selectedFile
+    
+    let contentHtml = sender === 'user' && this.selectedFile
       ? `<div class="file-attachment mb-2"><i class="bi ${this.selectedFile.type.includes('pdf') ? 'bi-file-earmark-pdf' : 'bi-image'} me-2"></i><span>${this.escapeHtml(this.selectedFile.name)}</span></div>`
       : '';
-    content += `<div class="message-content">${DOMPurify.sanitize(marked.parse(text))}</div>`;
+
+    // Replace the existing content += line with this new block
+    const rawText = String(text || '');
+    const isLikelyOCR = (rawText.match(/\n/g) || []).length >= 2 && rawText.length > 200;
+
+    try {
+      if (isLikelyOCR) {
+        contentHtml += `<div class="message-content"><pre class="ocr-text" style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
+      } else if (typeof marked === 'function' && typeof DOMPurify === 'object') {
+        contentHtml += `<div class="message-content">${DOMPurify.sanitize(marked.parse(text))}</div>`;
+      } else {
+        contentHtml += `<div class="message-content"><pre style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
+      }
+    } catch (err) {
+      console.error('[LearnBotUI] Markdown/DOMPurify render failed, falling back to plain text', err);
+      contentHtml += `<div class="message-content"><pre style="white-space:pre-wrap;margin:0;">${this.escapeHtml(rawText)}</pre></div>`;
+    }
+
     bubble.innerHTML = `
       <div class="message-avatar"><i class="bi ${sender === 'user' ? 'bi-person' : 'bi-robot'}"></i></div>
-      ${content}
+      ${contentHtml}
     `;
     this.chatMessages.appendChild(bubble);
     this.scrollToBottom();

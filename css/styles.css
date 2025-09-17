@@ -329,6 +329,24 @@ body {
   color: var(--accent-color);
 }
 
+/* keep OCR blocks compact but scrollable */
+.message .message-content pre.ocr-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+  max-height: 320px;       /* don't let it take whole screen */
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 6px;
+}
+
+/* slightly larger message bubble max-height for readability */
+.chat-messages .message { max-height: 420px; overflow-y: auto; }
+
+/* make sure Markdown lists render well on dark theme (optional) */
+.message .message-content ul { padding-left: 1.2rem; }
+
 /* Loading Animation */
 .typing-indicator {
   display: flex;
@@ -742,6 +760,7 @@ body {
 @media (min-width: 768px) and (max-width: 1023px) {
   .main-content {
     width: 100%;
+    height: 100vh;
     margin-left: 0;
   }
 

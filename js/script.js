@@ -6,7 +6,7 @@
 // - Bootstrap (old)
 // ==============================
 
-const API_BASE = "http://127.0.0.1:5000";
+const API_BASE = "https://full-learnbot.onrender.com";
 /* window.API_BASE_URL = "http://127.0.0.1:5000"; */
 
 class LearnBotUI {
@@ -185,9 +185,9 @@ class LearnBotUI {
         <div class="modal-dialog modal-sm modal-dialog-centered">
           <div class="modal-content bg-dark text-light">
             <div class="modal-body">
-              <h5>Hello — I'm <strong>LearnBot</strong> 👋</h5>
+              <h5>Hello! I'm <strong>LearnBot</strong> 👋</h5>
               <p class="small">Your AI study buddy that breaks complex course material into simple, easy-to-understand explanations.</p>
-              <p class="small mb-1"><strong>Tip:</strong> Choose a model from the header and pick an explanation level using the gear icon.</p>
+              <p class="small mb-1"><strong>Tip:</strong> Pick an explanation level using the gear (Setting) icon, ask that hard question, You can even upload an image or file using the ADD (+) button. Leave the rest to your best AI study buddy "<strong>LearnBot</strong>".</p>
               <div class="d-flex justify-content-between mt-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input" type="checkbox" id="welcomeSessionOnly">
@@ -493,7 +493,8 @@ class LearnBotUI {
     }
 
     // Fix API endpoint construction
-    const apiUrl = 'http://127.0.0.1:5000/simplify';  // Use direct URL instead of complex construction
+    const apiBase = (window.API_BASE_URL || API_BASE || 'https://full-learnbot.onrender.com').replace(/\/$/, '');
+    const apiUrl = `${apiBase}/simplify`;  // Use direct URL instead of complex construction
     console.debug('[LearnBotUI] sending to:', apiUrl);
 
     // Add endpoint validation
